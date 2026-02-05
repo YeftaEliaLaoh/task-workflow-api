@@ -24,7 +24,6 @@ export async function listTasks(
 ): Promise<ListTasksResult> {
   const limit = Math.min(input.limit ?? 20, 50)
 
-  // 🔑 decode cursor (if any)
   let decodedCursor: { lastTaskId: string } | undefined
   if (input.cursor) {
     decodedCursor = JSON.parse(

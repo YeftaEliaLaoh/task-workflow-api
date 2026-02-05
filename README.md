@@ -29,6 +29,7 @@ Each task:
 
 The codebase follows a **Clean Architecture–inspired structure**:
 
+```
 src/
 ├── application/
 │ └── usecases/ # Business logic (use cases)
@@ -45,7 +46,7 @@ src/
 │ └── errorMapper.ts # Error → HTTP mapping
 ├── server.ts # Fastify app builder
 └── index.ts # Application entry point
-
+```
 
 **Dependency direction:**
 
@@ -89,7 +90,6 @@ NEW → CANCELLED
 IN_PROGRESS → DONE
 IN_PROGRESS → CANCELLED
 
-
 ---
 
 ## 🚀 How to Run
@@ -107,7 +107,6 @@ IN_PROGRESS → CANCELLED
 ```bash
 npm install
 ```
-
 
 ### 3️⃣ Configure database
 
@@ -141,8 +140,10 @@ Server will run on:
 http://localhost:3000
 ```
 
-## 🚀 How to Run
-```npm test
+## 🚀 How to Test
+
+```
+npm test
 ```
 
 Test coverage includes:
@@ -156,6 +157,7 @@ Test coverage includes:
 ## 📡 API Endpoints & Sample cURL
 
 ### 1️⃣ Create Task (Idempotent)
+
 ```
 curl -X POST http://localhost:3000/v1/workspaces/w1/tasks \
   -H "Content-Type: application/json" \
@@ -204,22 +206,20 @@ curl -X POST http://localhost:3000/v1/workspaces/w1/tasks/{taskId}/transition \
 
 ```
 curl http://localhost:3000/v1/workspaces/w1/tasks/{taskId}
-
 ```
 Response includes:
 1. Task fields
 1. Embedded timeline of the last 20 events
 
 ### 5️⃣ List Tasks (Filtering + Cursor Pagination)
+
 ```
 curl "http://localhost:3000/v1/workspaces/w1/tasks?state=IN_PROGRESS&limit=10"
-
 ```
 
 ### 6️⃣ Get Outbox Events
 ```
 curl "http://localhost:3000/v1/events?limit=50"
-
 ```
 
 ## 📝 Brief Notes (Design Decisions)

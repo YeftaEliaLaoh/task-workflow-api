@@ -31,7 +31,6 @@ export function mapError(error: unknown, reply: FastifyReply) {
     })
   }
 
-  // fallback (unexpected error)
   console.error(error)
 
   return reply.status(500).send({

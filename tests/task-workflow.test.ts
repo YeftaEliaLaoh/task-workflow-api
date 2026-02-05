@@ -24,7 +24,8 @@ async function createNewTask() {
     method: 'POST',
     url: '/v1/workspaces/w1/tasks',
     headers: {
-      'x-tenant-id': 't1'
+      'x-tenant-id': 't1',
+      'x-role': 'agent'
     },
     payload: { title: 'Test task' }
   })
@@ -37,6 +38,7 @@ async function assignTaskAsManager(taskId: string, version: number) {
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${taskId}/assign`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'manager',
       'if-match-version': version
     },
@@ -46,15 +48,11 @@ async function assignTaskAsManager(taskId: string, version: number) {
 
 async function createAssignedTask() {
   const task = await createNewTask()
-
   await assignTaskAsManager(task.task_id, task.version)
 
-  // ✅ ambil versi REAL dari DB
-  const updated = await db('tasks')
+  return db('tasks')
     .where({ task_id: task.task_id })
     .first()
-
-  return updated
 }
 
 test('idempotent create returns same task', async () => {
@@ -65,6 +63,7 @@ test('idempotent create returns same task', async () => {
     url: '/v1/workspaces/w1/tasks',
     headers: {
       'x-tenant-id': 't1',
+      'x-role': 'agent',
       'idempotency-key': 'abc-123'
     },
     payload
@@ -75,6 +74,7 @@ test('idempotent create returns same task', async () => {
     url: '/v1/workspaces/w1/tasks',
     headers: {
       'x-tenant-id': 't1',
+      'x-role': 'agent',
       'idempotency-key': 'abc-123'
     },
     payload
@@ -90,6 +90,7 @@ test('invalid transition returns 409', async () => {
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${task.task_id}/transition`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'agent',
       'x-user-id': 'u1',
       'if-match-version': task.version
@@ -107,6 +108,7 @@ test('agent cannot complete unassigned task', async () => {
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${task.task_id}/transition`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'agent',
       'x-user-id': 'u1',
       'if-match-version': task.version
@@ -119,13 +121,13 @@ test('agent cannot complete unassigned task', async () => {
 
 test('version conflict returns 409', async () => {
   const task = await createNewTask()
-
   await assignTaskAsManager(task.task_id, task.version)
 
   const res = await app.inject({
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${task.task_id}/assign`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'manager',
       'if-match-version': task.version // stale
     },
@@ -142,6 +144,7 @@ test('transition creates outbox event', async () => {
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${task.task_id}/transition`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'agent',
       'x-user-id': task.assignee_id,
       'if-match-version': task.version
@@ -149,7 +152,6 @@ test('transition creates outbox event', async () => {
     payload: { to_state: 'IN_PROGRESS' }
   })
 
-  // ambil version terbaru
   const inProgress = await db('tasks')
     .where({ task_id: task.task_id })
     .first()
@@ -158,6 +160,7 @@ test('transition creates outbox event', async () => {
     method: 'POST',
     url: `/v1/workspaces/w1/tasks/${task.task_id}/transition`,
     headers: {
+      'x-tenant-id': 't1',
       'x-role': 'agent',
       'x-user-id': task.assignee_id,
       'if-match-version': inProgress.version
@@ -168,7 +171,5 @@ test('transition creates outbox event', async () => {
   const events = await db('task_events')
     .where({ task_id: task.task_id })
 
-  expect(
-    events.some(e => e.type === 'TaskStateChanged')
-  ).toBe(true)
+  expect(events.some(e => e.type === 'TaskStateChanged')).toBe(true)
 })

@@ -1,30 +1,21 @@
 import { db } from './knex'
 
 async function migrate() {
-  /* =========================
-   * TASKS
-   * ========================= */
+
   const hasTasks = await db.schema.hasTable('tasks')
   if (!hasTasks) {
     await db.schema.createTable('tasks', t => {
       t.uuid('task_id').primary()
 
-      t.text('tenant_id').notNullable()
       t.text('workspace_id').notNullable()
 
       t.text('title').notNullable()
       t.text('priority').notNullable().defaultTo('MEDIUM')
-
-      t.text('state')
-        .notNullable()
-        .defaultTo('NEW')
+      t.text('state').notNullable().defaultTo('NEW')
 
       t.text('assignee_id').nullable()
 
-      // Optimistic lock
-      t.integer('version')
-        .notNullable()
-        .defaultTo(1)
+      t.integer('version').notNullable().defaultTo(1)
 
       t.timestamps(true, true)
 
@@ -40,18 +31,10 @@ async function migrate() {
 
       ALTER TABLE tasks
       ADD CONSTRAINT tasks_state_check
-      CHECK (state IN (
-        'NEW',
-        'IN_PROGRESS',
-        'DONE',
-        'CANCELLED'
-      ));
+      CHECK (state IN ('NEW','IN_PROGRESS','DONE','CANCELLED'));
     `)
   }
 
-  /* =========================
-   * TASK EVENTS (OUTBOX)
-   * ========================= */
   const hasEvents = await db.schema.hasTable('task_events')
   if (!hasEvents) {
     await db.schema.createTable('task_events', t => {
@@ -63,10 +46,10 @@ async function migrate() {
         .inTable('tasks')
         .onDelete('CASCADE')
 
-      // REQUIRED BY SPEC
-      t.text('type').notNullable()
-      // TaskCreated | TaskAssigned | TaskStateChanged
+      t.text('tenant_id').notNullable()
+      t.text('role').notNullable()
 
+      t.text('type').notNullable()
       t.jsonb('payload').notNullable()
 
       t.timestamp('created_at')
@@ -74,20 +57,23 @@ async function migrate() {
         .defaultTo(db.fn.now())
 
       t.index(['task_id'])
+      t.index(['tenant_id'])
       t.index(['type'])
       t.index(['created_at'])
     })
   }
 
-  /* =========================
-   * IDEMPOTENCY KEYS
-   * ========================= */
   const hasIdem = await db.schema.hasTable('idempotency_keys')
   if (!hasIdem) {
     await db.schema.createTable('idempotency_keys', t => {
       t.text('key').primary()
-      t.jsonb('response').notNullable()
+      t.uuid('task_id')
+        .notNullable()
+        .references('task_id')
+        .inTable('tasks')
+        .onDelete('CASCADE')
       t.timestamp('created_at')
+        .notNullable()
         .defaultTo(db.fn.now())
     })
   }

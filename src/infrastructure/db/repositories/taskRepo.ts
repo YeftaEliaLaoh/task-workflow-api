@@ -4,7 +4,6 @@ import { TaskState } from '../../../domain/taskStateMachine'
 
 export interface TaskRow {
   task_id: string
-  tenant_id: string
   workspace_id: string
   title: string
   priority: 'LOW' | 'MEDIUM' | 'HIGH'

@@ -10,28 +10,36 @@ export type TaskEventType =
 export interface TaskEventRow {
   event_id: string
   task_id: string
+  tenant_id: string
+  role: 'agent' | 'manager'
   type: TaskEventType
   payload: unknown
   created_at?: Date
 }
 
+export interface TaskEventInsert {
+  taskId: string
+  tenantId: string
+  role: 'agent' | 'manager'
+  type: TaskEventType
+  payload: unknown
+}
+
 export const eventRepo = {
-  // INSERT (outbox write)
   insert(
-    taskId: string,
-    type: TaskEventType,
-    payload: unknown,
+    input: TaskEventInsert,
     trx: Knex = db
   ): Promise<number[]> {
     return trx<TaskEventRow>('task_events').insert({
       event_id: uuid(),
-      task_id: taskId,
-      type,
-      payload
+      task_id: input.taskId,
+      tenant_id: input.tenantId,
+      role: input.role,
+      type: input.type,
+      payload: input.payload
     })
   },
 
-  // QUERY (audit timeline)
   findLastByTaskId(
     taskId: string,
     limit = 20
@@ -47,5 +55,4 @@ export const eventRepo = {
       .orderBy('created_at', 'desc')
       .limit(limit)
   }
-
 }

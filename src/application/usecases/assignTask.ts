@@ -13,8 +13,8 @@ export interface AssignTaskInput {
   assigneeId: string
   version: number
   role: 'agent' | 'manager'
+  tenantId: string
 }
-
 
 export async function assignTask(input: AssignTaskInput): Promise<void> {
   if (input.role !== 'manager') {
@@ -46,10 +46,17 @@ export async function assignTask(input: AssignTaskInput): Promise<void> {
     }
 
     await eventRepo.insert(
-      task.task_id,
-      'TaskAssigned',
-      { assignee_id: input.assigneeId },
-      trx
-    )
+  {
+    taskId: task.task_id,
+    tenantId: input.tenantId,
+    role: input.role,
+    type: 'TaskAssigned',
+    payload: {
+      assignee_id: input.assigneeId
+    }
+  },
+  trx
+  )
+
   })
 }

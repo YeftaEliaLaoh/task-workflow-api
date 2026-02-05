@@ -10,11 +10,12 @@ import {
 
 export interface TransitionTaskInput {
   taskId: string
-  workspaceId: string 
+  workspaceId: string
   toState: 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
   version: number
   role: 'agent' | 'manager'
   userId?: string
+  tenantId: string
 }
 
 export async function transitionTask(
@@ -28,7 +29,6 @@ export async function transitionTask(
 
   assertValidTransition(task.state, input.toState)
 
-  // Role rules
   if (input.role === 'agent') {
     if (!input.userId || task.assignee_id !== input.userId) {
       throw new UnauthorizedError()
@@ -52,11 +52,15 @@ export async function transitionTask(
     }
 
     await eventRepo.insert(
-      task.task_id,
-      'TaskStateChanged',
       {
-        from: task.state,
-        to: input.toState
+        taskId: task.task_id,
+        tenantId: input.tenantId,
+        role: input.role,
+        type: 'TaskStateChanged',
+        payload: {
+          from: task.state,
+          to: input.toState
+        }
       },
       trx
     )
