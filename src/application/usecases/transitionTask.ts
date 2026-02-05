@@ -54,7 +54,6 @@ export async function transitionTask(
     await eventRepo.insert(
       {
         taskId: task.task_id,
-        tenantId: input.tenantId,
         role: input.role,
         type: 'TaskStateChanged',
         payload: {

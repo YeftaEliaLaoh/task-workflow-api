@@ -48,6 +48,7 @@ export async function createTask(
 
     const task: TaskRow = {
       task_id: uuid(),
+      tenant_id: input.tenantId,
       workspace_id: input.workspaceId,
       title: input.title,
       priority: input.priority ?? 'MEDIUM',
@@ -67,7 +68,6 @@ export async function createTask(
     await eventRepo.insert(
       {
         taskId: task.task_id,
-        tenantId: input.tenantId,
         role: input.role,
         type: 'TaskCreated',
         payload: {
@@ -79,12 +79,10 @@ export async function createTask(
       trx
     )
 
-    if (input.idempotencyKey) {
-      await trx('idempotency_keys').insert({
-        key: input.idempotencyKey,
-        task_id: task.task_id
-      })
-    }
+    await trx('idempotency_keys').insert({
+      key: input.idempotencyKey,
+      task_id: task.task_id
+    })
 
     return response
   })

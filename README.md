@@ -85,10 +85,10 @@ A task has the following properties:
 
 Allowed transitions:
 
-NEW → IN_PROGRESS
-NEW → CANCELLED
-IN_PROGRESS → DONE
-IN_PROGRESS → CANCELLED
+- NEW → IN_PROGRESS
+- NEW → CANCELLED
+- IN_PROGRESS → DONE
+- IN_PROGRESS → CANCELLED
 
 ---
 
@@ -221,6 +221,27 @@ curl "http://localhost:3000/v1/workspaces/w1/tasks?state=IN_PROGRESS&limit=10"
 ```
 curl "http://localhost:3000/v1/events?limit=50"
 ```
+
+### 📬 Postman Collection
+A ready-to-use Postman collection is included in this repository:
+```
+task-workflow-api.postman_collection.json
+```
+
+How to use:
+
+1. Open Postman
+1. Click Import
+1. Select task-workflow-api.postman_collection.json
+
+The collection includes:
+- Task creation (idempotent)
+- Assignment
+- State transitions
+- Task retrieval with audit timeline
+- Event outbox queries
+
+This allows quick manual testing and easier API exploration without crafting requests manually.
 
 ## 📝 Brief Notes (Design Decisions)
 

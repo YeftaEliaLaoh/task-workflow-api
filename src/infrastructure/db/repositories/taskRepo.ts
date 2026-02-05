@@ -4,6 +4,7 @@ import { TaskState } from '../../../domain/taskStateMachine'
 
 export interface TaskRow {
   task_id: string
+  tenant_id: string
   workspace_id: string
   title: string
   priority: 'LOW' | 'MEDIUM' | 'HIGH'
@@ -52,10 +53,19 @@ export const taskRepo = {
       })
   },
 
-  list(query: ListTaskQuery) {
-    let q = db<TaskRow>('tasks')
+  list(query: {
+    workspaceId: string
+    state?: string
+    assigneeId?: string
+    limit: number
+    cursor?: { createdAt: string; taskId: string }
+  }) {
+    const q = db<TaskRow>('tasks')
       .where({ workspace_id: query.workspaceId })
-      .orderBy('created_at', 'desc')
+      .orderBy([
+        { column: 'created_at', order: 'desc' },
+        { column: 'task_id', order: 'desc' }
+      ])
       .limit(query.limit)
 
     if (query.state) q.andWhere('state', query.state)

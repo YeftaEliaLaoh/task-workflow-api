@@ -48,7 +48,6 @@ export async function assignTask(input: AssignTaskInput): Promise<void> {
     await eventRepo.insert(
   {
     taskId: task.task_id,
-    tenantId: input.tenantId,
     role: input.role,
     type: 'TaskAssigned',
     payload: {

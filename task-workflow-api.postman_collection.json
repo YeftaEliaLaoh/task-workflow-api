@@ -1,0 +1,302 @@
+{
+  "info": {
+    "_postman_id": "c0fc9585-548d-4452-82c9-ab17fb72a38a",
+    "name": "task-workflow-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "21716859"
+  },
+  "item": [
+    {
+      "name": "Task creation (idempotent)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          },
+          {
+            "key": "X-Role",
+            "value": "manager"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "idem-122",
+            "disabled": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Follow up customercustomer\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:3000/v1/workspaces/w1/tasks \\\r\n  -H \"X-Tenant-Id: t1\" \\\r\n  -H \"X-Role: manager\" \\\r\n  -H \"Idempotency-Key: idem-123\" \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\"title\":\"Follow up customer\"}'\r\n\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Assignment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          },
+          {
+            "key": "X-Role",
+            "value": "manager"
+          },
+          {
+            "key": "If-Match-Version",
+            "value": "1"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"assignee_id\": \"u_123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks/<task_id>/assign",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks",
+            "<task_id>",
+            "assign"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:3000/v1/workspaces/w1/tasks/<TASK_ID>/assign \\\r\n  -H \"X-Tenant-Id: t1\" \\\r\n  -H \"X-Role: manager\" \\\r\n  -H \"If-Match-Version: 1\" \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{ \"assignee_id\": \"u_123\" }'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "State transitions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          },
+          {
+            "key": "X-Role",
+            "value": "agent"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "u_123"
+          },
+          {
+            "key": "If-Match-Version",
+            "value": "2"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"to_state\": \"IN_PROGRESS\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks/<task_id>/transition",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks",
+            "<task_id>",
+            "transition"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:3000/v1/workspaces/w1/tasks/<TASK_ID>/transition \\\r\n  -H \"X-Tenant-Id: t1\" \\\r\n  -H \"X-Role: agent\" \\\r\n  -H \"X-User-Id: u_123\" \\\r\n  -H \"If-Match-Version: 2\" \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{ \"to_state\": \"IN_PROGRESS\" }'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Get task + audit timeline",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks/<task_id>",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks",
+            "<task_id>"
+          ]
+        },
+        "description": "Generated from cURL: curl -X GET http://localhost:3000/v1/workspaces/w1/tasks/8c3b9e7a-1234-4c9a-bbbb-111111111111 \\\r\n  -H \"X-Tenant-Id: t1\"\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "List tasks (simple filtering 1)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks?state=CANCELLED&assignee_id=u_123&limit=20",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks"
+          ],
+          "query": [
+            {
+              "key": "state",
+              "value": "CANCELLED"
+            },
+            {
+              "key": "assignee_id",
+              "value": "u_123"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X GET \"http://localhost:3000/v1/workspaces/w1/tasks?state=IN_PROGRESS&assignee_id=u_123&limit=20\" \\\r\n  -H \"X-Tenant-Id: t1\"\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "List tasks (simple filtering 2)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Tenant-Id",
+            "value": "t1"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/v1/workspaces/w1/tasks?limit=1&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAyLTA1VDE0OjE2OjI5Ljg2NloiLCJ0YXNrSWQiOiI4ZjAyOTBjNS1jMmU4LTRhOWUtODQyNS1hYzA0ZWJjODQ5NTgifQ==",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "workspaces",
+            "w1",
+            "tasks"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "1"
+            },
+            {
+              "key": "cursor",
+              "value": "eyJjcmVhdGVkQXQiOiIyMDI2LTAyLTA1VDE0OjE2OjI5Ljg2NloiLCJ0YXNrSWQiOiI4ZjAyOTBjNS1jMmU4LTRhOWUtODQyNS1hYzA0ZWJjODQ5NTgifQ=="
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X GET \"http://localhost:3000/v1/workspaces/w1/tasks?limit=20&cursor=eyJsYXN0SWQiOiJhMiJ9\" \\\r\n  -H \"X-Tenant-Id: t1\"\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Event / Audit Requirement (Outbox Pattern)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/v1/events?limit=10",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "v1",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X GET \"http://localhost:3000/v1/events?limit=10\"\r\n"
+      },
+      "response": []
+    }
+  ]
+}

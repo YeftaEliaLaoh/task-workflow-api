@@ -19,12 +19,18 @@ export interface ListTasksResult {
   next_cursor?: string
 }
 
+interface DecodedCursor {
+  createdAt: string
+  taskId: string
+}
+
 export async function listTasks(
   input: ListTasksInput
 ): Promise<ListTasksResult> {
   const limit = Math.min(input.limit ?? 20, 50)
 
-  let decodedCursor: { lastTaskId: string } | undefined
+  let decodedCursor: DecodedCursor | undefined
+
   if (input.cursor) {
     decodedCursor = JSON.parse(
       Buffer.from(input.cursor, 'base64').toString('utf8')
@@ -36,7 +42,7 @@ export async function listTasks(
     state: input.state,
     assigneeId: input.assigneeId,
     limit: limit + 1,
-    cursor: decodedCursor?.lastTaskId
+    cursor: decodedCursor
   })
 
   const hasNext = rows.length > limit
@@ -53,7 +59,8 @@ export async function listTasks(
     next_cursor: hasNext
       ? Buffer.from(
           JSON.stringify({
-            lastTaskId: tasks[tasks.length - 1].task_id
+            createdAt: tasks[tasks.length - 1].created_at,
+            taskId: tasks[tasks.length - 1].task_id
           })
         ).toString('base64')
       : undefined
