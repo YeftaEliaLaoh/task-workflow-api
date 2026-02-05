@@ -9,17 +9,22 @@ import {
 
 export interface AssignTaskInput {
   taskId: string
+  workspaceId: string
   assigneeId: string
   version: number
   role: 'agent' | 'manager'
 }
+
 
 export async function assignTask(input: AssignTaskInput): Promise<void> {
   if (input.role !== 'manager') {
     throw new UnauthorizedError()
   }
 
-  const task = await taskRepo.findById(input.taskId)
+  const task = await taskRepo.findById(
+    input.taskId,
+    input.workspaceId
+  )
   if (!task) {
     throw new NotFoundError()
   }

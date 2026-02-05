@@ -15,24 +15,26 @@ export interface TaskRow {
   updated_at?: Date
 }
 
-export type TaskUpdate = Partial<Pick<
-  TaskRow,
-  'state' | 'assignee_id'
->>
+export type TaskUpdate = Partial<
+  Pick<TaskRow, 'state' | 'assignee_id'>
+>
+
+export interface ListTaskQuery {
+  workspaceId: string
+  state?: TaskState
+  assigneeId?: string
+  limit: number
+  cursor?: string
+}
 
 export const taskRepo = {
-  insert(
-    task: TaskRow,
-    trx: Knex = db
-  ): Promise<number[]> {
+  insert(task: TaskRow, trx: Knex = db) {
     return trx<TaskRow>('tasks').insert(task)
   },
 
-  findById(
-    taskId: string
-  ): Promise<TaskRow | undefined> {
+  findById(taskId: string, workspaceId: string) {
     return db<TaskRow>('tasks')
-      .where({ task_id: taskId })
+      .where({ task_id: taskId, workspace_id: workspaceId })
       .first()
   },
 
@@ -41,7 +43,7 @@ export const taskRepo = {
     version: number,
     changes: TaskUpdate,
     trx: Knex = db
-  ): Promise<number> {
+  ) {
     return trx<TaskRow>('tasks')
       .where({ task_id: taskId, version })
       .update({
@@ -49,5 +51,18 @@ export const taskRepo = {
         version: version + 1,
         updated_at: trx.fn.now()
       })
+  },
+
+  list(query: ListTaskQuery) {
+    let q = db<TaskRow>('tasks')
+      .where({ workspace_id: query.workspaceId })
+      .orderBy('created_at', 'desc')
+      .limit(query.limit)
+
+    if (query.state) q.andWhere('state', query.state)
+    if (query.assigneeId) q.andWhere('assignee_id', query.assigneeId)
+    if (query.cursor) q.andWhere('task_id', '<', query.cursor)
+
+    return q
   }
 }

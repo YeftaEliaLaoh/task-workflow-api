@@ -1,7 +1,12 @@
-import Fastify from 'fastify'
+import Fastify, { FastifyInstance } from 'fastify'
 import { routes } from './infrastructure/http/routes'
 
-export const app = Fastify()
-app.register(routes)
+export default function buildApp(): FastifyInstance {
+  const app = Fastify({
+    logger: false
+  })
 
-app.listen({ port: 3000 })
+  app.register(routes)
+
+  return app
+}

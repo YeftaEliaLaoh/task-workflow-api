@@ -16,6 +16,7 @@ export interface TaskEventRow {
 }
 
 export const eventRepo = {
+  // INSERT (outbox write)
   insert(
     taskId: string,
     type: TaskEventType,
@@ -28,5 +29,23 @@ export const eventRepo = {
       type,
       payload
     })
+  },
+
+  // QUERY (audit timeline)
+  findLastByTaskId(
+    taskId: string,
+    limit = 20
+  ): Promise<TaskEventRow[]> {
+    return db<TaskEventRow>('task_events')
+      .where({ task_id: taskId })
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+  },
+
+  findLatest(limit = 50): Promise<TaskEventRow[]> {
+    return db<TaskEventRow>('task_events')
+      .orderBy('created_at', 'desc')
+      .limit(limit)
   }
+
 }

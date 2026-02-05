@@ -1,23 +1,40 @@
+import { FastifyReply } from 'fastify'
 import {
   UnauthorizedError,
-  InvalidTransitionError,
-  VersionConflictError
+  VersionConflictError,
+  NotFoundError,
+  InvalidTransitionError
 } from '../../domain/errors'
-import { FastifyReply } from 'fastify'
 
-export function mapError(err: unknown, reply: FastifyReply) {
-  if (err instanceof UnauthorizedError) {
-    return reply.code(403).send({ message: 'Forbidden' })
+export function mapError(error: unknown, reply: FastifyReply) {
+  if (error instanceof NotFoundError) {
+    return reply.status(404).send({
+      message: 'Not found'
+    })
   }
 
-  if (err instanceof InvalidTransitionError) {
-    return reply.code(409).send({ message: 'Invalid transition' })
+  if (error instanceof UnauthorizedError) {
+    return reply.status(403).send({
+      message: 'Forbidden'
+    })
   }
 
-  if (err instanceof VersionConflictError) {
-    return reply.code(409).send({ message: 'Version conflict' })
+  if (error instanceof VersionConflictError) {
+    return reply.status(409).send({
+      message: 'Version conflict'
+    })
   }
 
-  console.error(err)
-  return reply.code(500).send({ message: 'Internal Server Error' })
+  if (error instanceof InvalidTransitionError) {
+    return reply.status(409).send({
+      message: error.message
+    })
+  }
+
+  // fallback (unexpected error)
+  console.error(error)
+
+  return reply.status(500).send({
+    message: 'Internal Server Error'
+  })
 }

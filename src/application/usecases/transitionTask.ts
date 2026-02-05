@@ -10,6 +10,7 @@ import {
 
 export interface TransitionTaskInput {
   taskId: string
+  workspaceId: string 
   toState: 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
   version: number
   role: 'agent' | 'manager'
@@ -19,7 +20,7 @@ export interface TransitionTaskInput {
 export async function transitionTask(
   input: TransitionTaskInput
 ): Promise<void> {
-  const task = await taskRepo.findById(input.taskId)
+  const task = await taskRepo.findById(input.taskId, input.workspaceId)
 
   if (!task) {
     throw new NotFoundError()
