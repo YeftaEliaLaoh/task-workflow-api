@@ -1,9 +1,29 @@
+import { Knex } from 'knex'
 import { db } from '../knex'
 
-export const idempotencyRepo = {
-  find: (key) =>
-    db('idempotency_keys').where({ key }).first(),
+export interface IdempotencyRow<T = unknown> {
+  key: string
+  response: T
+  created_at?: Date
+}
 
-  save: (key, response, trx = db) =>
-    trx('idempotency_keys').insert({ key, response })
+export const idempotencyRepo = {
+  find<T = unknown>(
+    key: string
+  ): Promise<IdempotencyRow<T> | undefined> {
+    return db<IdempotencyRow<T>>('idempotency_keys')
+      .where({ key })
+      .first()
+  },
+
+  save<T = unknown>(
+    key: string,
+    response: T,
+    trx: Knex = db
+  ): Promise<number[]> {
+    return trx<IdempotencyRow<T>>('idempotency_keys').insert({
+      key,
+      response
+    })
+  }
 }

@@ -1,14 +1,29 @@
 import { db } from '../../infrastructure/db/knex'
 import { taskRepo } from '../../infrastructure/db/repositories/taskRepo'
 import { eventRepo } from '../../infrastructure/db/repositories/eventRepo'
-import { UnauthorizedError, VersionConflictError } from '../../domain/errors'
+import {
+  UnauthorizedError,
+  VersionConflictError,
+  NotFoundError
+} from '../../domain/errors'
 
-export async function assignTask(input) {
+export interface AssignTaskInput {
+  taskId: string
+  assigneeId: string
+  version: number
+  role: 'agent' | 'manager'
+}
+
+export async function assignTask(input: AssignTaskInput): Promise<void> {
   if (input.role !== 'manager') {
     throw new UnauthorizedError()
   }
 
   const task = await taskRepo.findById(input.taskId)
+  if (!task) {
+    throw new NotFoundError()
+  }
+
   if (!['NEW', 'IN_PROGRESS'].includes(task.state)) {
     throw new UnauthorizedError()
   }
@@ -21,9 +36,12 @@ export async function assignTask(input) {
       trx
     )
 
-    if (!updated) throw new VersionConflictError()
+    if (!updated) {
+      throw new VersionConflictError()
+    }
 
     await eventRepo.insert(
+      task.task_id,
       'TaskAssigned',
       { assignee_id: input.assigneeId },
       trx

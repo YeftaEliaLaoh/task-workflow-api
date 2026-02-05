@@ -1,3 +1,5 @@
+import { InvalidTransitionError } from './errors'
+
 export type TaskState = 'NEW' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
 
 const transitions: Record<TaskState, TaskState[]> = {
